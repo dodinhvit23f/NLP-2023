@@ -21,12 +21,16 @@ class CustomDataDataSet(Dataset):
                 if skip:
                     x = self.tokenizer(row[1], return_tensors='pt')
                     self.x.append(self.model(**x)[1])
-                    self.y.append([int(row[2])])
+
+                    y_true = torch.zeros(3, dtype=torch.float)
+                    y_true[int(row[2])] = 1
+                    y_true = y_true.reshape(-1,1).t()
+                    self.y.append(y_true)
                 skip = True
 
         self.number_of_sample = len(self.x)
         self.x = torch.stack(self.x)
-        self.y = torch.FloatTensor(self.y)
+        #self.y = torch.FloatTensor(self.y)
 
     def __getitem__(self, item):
         return self.x[item], self.y[item]

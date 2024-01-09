@@ -9,4 +9,5 @@ class CustomerResponseAnalysis(nn.Module):
         self.qa_outputs = nn.Linear(768, self.num_labels)
 
     def forward(self, input_ids):
-        return self.qa_outputs(input_ids)
+        y = self.qa_outputs(input_ids)
+        return y

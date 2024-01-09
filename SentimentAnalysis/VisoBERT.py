@@ -18,7 +18,7 @@ if __name__ == '__main__':
     data_set = CustomDataDataSet("./data/train/train_VLSP.csv")
     dataLoader = DataLoader(dataset=data_set, shuffle=True, batch_size=batch_size)
 
-    optimizer = optim.AdamW(model.parameters(), lr=0.001)
+    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.003)
     loss_fn = torch.nn.CrossEntropyLoss()
 
     max_loop = 4
@@ -31,16 +31,22 @@ if __name__ == '__main__':
             optimizer.zero_grad()
 
             output = model(inputs)
-            _, label_actual = output.max(2)
+            loss = loss_fn(output, labels)
 
-            loss = loss_fn(label_actual.type(torch.FloatTensor), labels)
-
+            output = output.view(10,3)
+            _, label_actual = output.max(1)
+            _, label_expect = labels.view(10,3).max(1)
             avg_loss.append(loss.item())
             loss = loss.mean()
-            print(loss.item())
-            loss.backward()
 
-        optimizer.step()
+            loss.backward(retain_graph=True)
+            optimizer.step()
+            print("epoch {}, step {}, actual correct {}/10%, loss {}"
+                  .format(epoch,
+                                  i,
+                                  (label_actual == label_expect).sum().item(),
+                                  loss.item()))
+
 
     # model.load_state_dict(torch.load("./models/Cnn.bin"))
 
