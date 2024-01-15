@@ -18,7 +18,7 @@ if __name__ == '__main__':
     data_set = CustomDataDataSet("./data/train/train_VLSP.csv")
     dataLoader = DataLoader(dataset=data_set, shuffle=True, batch_size=batch_size)
 
-    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.003)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, weight_decay=0.03)
     loss_fn = torch.nn.CrossEntropyLoss()
 
     max_loop = 4
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     for epoch in range(max_loop):
         for i, (inputs, labels) in enumerate(dataLoader):
-            optimizer.step()
+
             optimizer.zero_grad()
 
             output = model(inputs)
