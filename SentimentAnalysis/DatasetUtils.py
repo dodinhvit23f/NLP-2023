@@ -1,15 +1,15 @@
 import csv
 
-import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModel
 from torch.utils.data import Dataset, DataLoader
-
+import py_vncorenlp
 
 class CustomDataDataSet(Dataset):
     def __init__(self, path):
-        self.tokenizer = AutoTokenizer.from_pretrained('uitnlp/visobert')
-        self.model = AutoModel.from_pretrained('uitnlp/visobert')
+        self.tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
+        self.model = AutoModel.from_pretrained("vinai/phobert-base-v2")
+        rdrsegmenter = py_vncorenlp.VnCoreNLP(annotators=["wseg"])
         self.x = []
         self.y = []
 
@@ -19,8 +19,10 @@ class CustomDataDataSet(Dataset):
             reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
             for row in reader:
                 if skip:
-                    x = self.tokenizer(row[1], return_tensors='pt')
-                    self.x.append(self.model(**x)[1])
+                    x = self.tokenizer.encode(' '.join(rdrsegmenter.word_segment(row[1])))
+                    x = torch.tensor([x])
+                    x = self.model(x)
+                    self.x.append(x['pooler_output'])
 
                     y_true = torch.zeros(3, dtype=torch.float)
                     y_true[int(row[2])] = 1
